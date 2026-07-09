@@ -6,6 +6,20 @@
       "email": "divvyekansara@gmail.com",
       "password": "abcdefghi",
       "createdAt": "2026-06-22T19:32:05.925Z"
+    },
+    {
+      "id": "1783518725750",
+      "name": "divvye kansara",
+      "email": "divvye@gmail.com",
+      "password": "CRonaldo7!",
+      "createdAt": "2026-07-08T13:52:05.750Z"
+    },
+    {
+      "id": "1783572885371",
+      "name": "divvye",
+      "email": "kansara@gmail.com",
+      "password": "abcdefghi",
+      "createdAt": "2026-07-09T04:54:45.371Z"
     }
   ],
   "uploads": [
@@ -1505,6 +1519,120 @@
       "source": "File: sample_new_grad_offer_letter.pdf (application/pdf)",
       "ocrConfidence": 0.97,
       "extractionMethod": "pdf-parse (fallback)",
+      "data": {
+        "country": "US",
+        "currency": "USD",
+        "state": "California",
+        "salary": 115000,
+        "signing_bonus": 10000,
+        "relocation_bonus": 5000,
+        "rsu_count": 400,
+        "vesting_period_years": 4,
+        "stock_options": 0,
+        "pay_frequency": "biweekly",
+        "start_date": "2026-08-03",
+        "location": "San Jose, California",
+        "employment_type": "full_time",
+        "retirement_401k": {
+          "match_limit": 6,
+          "match_rate": 0.5
+        },
+        "health_insurance": {
+          "dental": true,
+          "medical": true,
+          "vision": true
+        },
+        "pto_days": 30,
+        "probation_period_days": 0
+      },
+      "validation": {
+        "isValid": true,
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "userId": "1783518725750",
+      "timestamp": "2026-07-08T13:52:16.695Z",
+      "source": "File: sample_new_grad_offer_letter.pdf (application/pdf)",
+      "ocrConfidence": 0.98,
+      "extractionMethod": "pdf-parse",
+      "data": {
+        "country": "US",
+        "currency": "USD",
+        "state": "California",
+        "salary": 115000,
+        "signing_bonus": 10000,
+        "relocation_bonus": 5000,
+        "rsu_count": 400,
+        "vesting_period_years": 4,
+        "stock_options": 0,
+        "pay_frequency": "biweekly",
+        "start_date": "2026-08-03",
+        "location": "San Jose, California",
+        "employment_type": "full_time",
+        "retirement_401k": {
+          "match_limit": 6,
+          "match_rate": 0.5
+        },
+        "health_insurance": {
+          "dental": true,
+          "medical": true,
+          "vision": true
+        },
+        "pto_days": 30,
+        "probation_period_days": 0
+      },
+      "validation": {
+        "isValid": true,
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "userId": "1783518725750",
+      "timestamp": "2026-07-09T04:54:00.153Z",
+      "source": "File: sample_new_grad_offer_letter.pdf (application/pdf)",
+      "ocrConfidence": 0.98,
+      "extractionMethod": "pdf-parse",
+      "data": {
+        "country": "US",
+        "currency": "USD",
+        "state": "California",
+        "salary": 115000,
+        "signing_bonus": 10000,
+        "relocation_bonus": 5000,
+        "rsu_count": 400,
+        "vesting_period_years": 4,
+        "stock_options": 0,
+        "pay_frequency": "biweekly",
+        "start_date": "2026-08-03",
+        "location": "San Jose, California",
+        "employment_type": "full_time",
+        "retirement_401k": {
+          "match_limit": 6,
+          "match_rate": 0.5
+        },
+        "health_insurance": {
+          "dental": true,
+          "medical": true,
+          "vision": true
+        },
+        "pto_days": 30,
+        "probation_period_days": 0
+      },
+      "validation": {
+        "isValid": true,
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "userId": "1783572885371",
+      "timestamp": "2026-07-09T04:54:52.629Z",
+      "source": "File: sample_new_grad_offer_letter.pdf (application/pdf)",
+      "ocrConfidence": 0.98,
+      "extractionMethod": "pdf-parse",
       "data": {
         "country": "US",
         "currency": "USD",

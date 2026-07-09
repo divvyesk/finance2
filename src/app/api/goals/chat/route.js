@@ -17,17 +17,28 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { levelNumber, message } = body;
+    const { levelNumber, message, roadmap, savings, debt, monthlyExpenses, extractedParams } = body;
 
     if (levelNumber === undefined || !message) {
       return NextResponse.json({ error: 'Level number and message are required' }, { status: 400 });
     }
 
     const db = await getDatabase();
-    const activeGoal = await db.collection('goals').findOne({ userId: sessionId });
+    let activeGoal = await db.collection('goals').findOne({ userId: sessionId });
 
     if (!activeGoal) {
-      return NextResponse.json({ error: 'No active goal found. Please create a goal first.' }, { status: 400 });
+      if (roadmap) {
+        activeGoal = {
+          userId: sessionId,
+          savings: Number(savings || 0),
+          debt: debt || [],
+          monthlyExpenses: monthlyExpenses || [],
+          targetCost: extractedParams?.targetCost || roadmap.targetCost || 0,
+          roadmap: roadmap
+        };
+      } else {
+        return NextResponse.json({ error: 'No active goal found. Please create a goal first.' }, { status: 400 });
+      }
     }
 
     const level = activeGoal.roadmap?.levels?.find(l => l.levelNumber === Number(levelNumber));
@@ -79,17 +90,20 @@ Do not include any greeting or signature, just write the helpful response in cle
       timestamp: new Date()
     };
 
-    // Update level chatHistory in DB
-    await db.collection('goals').updateOne(
-      { userId: sessionId, "roadmap.levels.levelNumber": Number(levelNumber) },
-      {
-        $push: {
-          "roadmap.levels.$.chatHistory": {
-            $each: [chatMsg, replyMsg]
+    // Update level chatHistory in DB only if the goal exists
+    const exists = await db.collection('goals').findOne({ userId: sessionId });
+    if (exists) {
+      await db.collection('goals').updateOne(
+        { userId: sessionId, "roadmap.levels.levelNumber": Number(levelNumber) },
+        {
+          $push: {
+            "roadmap.levels.$.chatHistory": {
+              $each: [chatMsg, replyMsg]
+            }
           }
         }
-      }
-    );
+      );
+    }
 
     return NextResponse.json({ reply });
 

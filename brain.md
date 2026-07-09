@@ -63,14 +63,18 @@ finance/
 2. **Validator Engine**: Implemented `validator.js` to ensure the parsed information is financially consistent (e.g. gross pay > net pay, validation warnings/errors).
 3. **Tax & Goals Engine**: Added localized estimation rules for taxes (`taxEngine.js`) and simulated success trajectories for goals using compounding math and runaways (`goalsEngine.js`).
 4. **OpenRouter Migration**: Replaced direct Gemini SDK calls with a centralized OpenRouter proxy (`openRouterClient.js`) to prevent high demand rate limits on the free Google Gemini tier. The proxy maps direct model designations to OpenRouter slugs (e.g., `gemini-2.5-flash` to `google/gemini-2.5-flash`) and transforms the SDK format to standard chat completions.
+5. **Level-wise Chatbot Fix**: Fixed a bug where interacting with the level chatbot before saving/confirming a goal threw a `"No active goal found"` error. We introduced client-side fallback context parameters (`roadmap`, `savings`, `debt`, etc.) to the POST body, and updated `/api/goals/chat` to build prompt context dynamically using these parameters when the database record does not exist yet.
+6. **Monthly Deposit Indicators**: Enhanced the roadmap level display to explicitly show the monthly deposit requirement for each stage (calculated dynamically by dividing the level's total target amount by the active timeline in months). Supported automatic updates if switching to/from the stress-free alternative plan.
+7. **Cash Flow Surplus Indicators**: Integrated net take-home pay tracking from Step 2 into the Step 3 Baseline Wizard. Created a "Monthly Cash Flow Summary" panel that live-calculates the surplus money left over (take-home minus core expenses) before proceeding. Also added a "Your Monthly Surplus" card to the roadmap dashboard metrics grid.
+8. **Five-Level Starter Emergency Fund Roadmap**: Shifted from a 4-level system to a 5-level system to support the "Starter Emergency Fund" approach. The sequence is now: (1) Starter Emergency Shield (1 month of core expenses target), (2) Debt Decelerator (high-interest debt pay down), (3) Full Emergency Guardrail (build remainder up to 3 months of core expenses), (4) Investment Launchpad (automated index funds investing), and (5) Goal Vault (primary goal accumulation).
 
 ---
 
 ## 4. Current Goal
 
-- **Goal**: Maintain and synchronize `brain.md` context.
-- **Why**: Provide AI agents with an up-to-date representation of the codebase state, progress, and objectives to prevent hallucination, minimize startup analysis time, and execute changes safely.
-- **State**: The file `brain.md` is initialized. `AGENTS.md` is updated to configure automatic discovery and synchronization guidelines.
+- **Goal**: Maintain code alignment and support subsequent roadmap refinement requests.
+- **Why**: Deliver clear, transparent, and actionable personal finance tools.
+- **State**: The `brain.md` file is actively synchronized. A 5-level roadmap implementing the Starter Emergency Fund framework is fully deployed in the goals engine and visual dashboard.
 
 ---
 

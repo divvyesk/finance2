@@ -41,6 +41,7 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
   const [useAlternative, setUseAlternative] = useState(false);
   const [goalConfirmed, setGoalConfirmed] = useState(false);
   const [activeLevelWorkspace, setActiveLevelWorkspace] = useState(null);
+  const [netTakeHomeMonthly, setNetTakeHomeMonthly] = useState(0);
 
 
   // Roadmap active tabs & subchat
@@ -52,6 +53,17 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
   // Fetch baseline and active goal on load
   useEffect(() => {
     setLoading(true);
+
+    // Fetch tax information to get net monthly take-home pay
+    fetch('/api/taxes')
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(tData => {
+        if (tData.taxBreakdown) {
+          setNetTakeHomeMonthly(Math.round(tData.taxBreakdown.netPay / 12));
+        }
+      })
+      .catch(err => console.error('Failed to load tax details in Step 3:', err));
+
     fetch('/api/goals')
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(d => {
@@ -268,14 +280,18 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
     const targetLvl = roadmap.levels.find(l => l.levelNumber === lvlNum);
     if (!targetLvl.chatHistory) targetLvl.chatHistory = [];
     targetLvl.chatHistory.push({ role: 'user', text: userMsg });
-
     try {
       const res = await fetch('/api/goals/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           levelNumber: lvlNum,
-          message: userMsg
+          message: userMsg,
+          roadmap: roadmap,
+          savings: savings,
+          debt: debt,
+          monthlyExpenses: monthlyExpenses,
+          extractedParams: extractedParams
         })
       });
       const data = await res.json();
@@ -291,6 +307,7 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
   };
 
   const s = sym(profile?.currency || 'USD');
+  const expensesSum = monthlyExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -423,6 +440,40 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
                 </button>
               </div>
             </div>
+
+            {/* Live Cash Flow Summary */}
+            {netTakeHomeMonthly > 0 && (
+              <div style={{
+                background: 'rgba(99, 102, 241, 0.05)',
+                border: '1px solid rgba(99, 102, 241, 0.15)',
+                borderRadius: 12,
+                padding: '1.25rem',
+                marginBottom: '1.5rem'
+              }}>
+                <h4 style={{ fontSize: '0.95rem', margin: '0 0 0.75rem 0', color: 'var(--primary)', fontWeight: 600 }}>Monthly Cash Flow Summary</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem' }}>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Take-home Pay</span>
+                    <strong style={{ fontSize: '1.1rem', color: 'var(--text-primary)' }}>{s}{netTakeHomeMonthly.toLocaleString()}/mo</strong>
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Core Expenses</span>
+                    <strong style={{ fontSize: '1.1rem', color: 'var(--accent)' }}>{s}{expensesSum.toLocaleString()}/mo</strong>
+                  </div>
+                  <div>
+                    <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Left for Roadmap</span>
+                    <strong style={{ fontSize: '1.1rem', color: 'var(--success)' }}>
+                      {s}{(netTakeHomeMonthly - expensesSum).toLocaleString()}/mo
+                    </strong>
+                  </div>
+                </div>
+                {netTakeHomeMonthly - expensesSum <= 0 && (
+                  <p style={{ color: 'var(--error)', fontSize: '0.8rem', margin: '0.75rem 0 0 0', fontWeight: 500 }}>
+                    ⚠ Warning: Core expenses exceed your monthly take-home pay. You will have $0 left to allocate to goals.
+                  </p>
+                )}
+              </div>
+            )}
 
             <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
               <button type="button" className="btn btn-secondary" onClick={onBack}>← Back to Step 2</button>
@@ -573,6 +624,8 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
                 submitSubChat={submitSubChat}
                 subChatLoading={subChatLoading}
                 renderFormattedText={renderFormattedText}
+                roadmap={roadmap}
+                useAlternative={useAlternative}
               />
             ) : (
               <section className="card">
@@ -616,13 +669,21 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
                 )}
 
                 {/* Stress / metrics summary cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
                   <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-light)', padding: '1rem', borderRadius: 8 }}>
                     <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Monthly Target</span>
                     <strong style={{ fontSize: '1.4rem', color: 'var(--primary)' }}>
                       {s}{(useAlternative ? roadmap.alternativePlan?.monthlyRequired || roadmap.monthlyRequired : roadmap.monthlyRequired).toLocaleString()}
                     </strong>
                   </div>
+                  {netTakeHomeMonthly > 0 && (
+                    <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-light)', padding: '1rem', borderRadius: 8 }}>
+                      <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Your Monthly Surplus</span>
+                      <strong style={{ fontSize: '1.4rem', color: 'var(--success)' }}>
+                        {s}{(netTakeHomeMonthly - expensesSum).toLocaleString()}
+                      </strong>
+                    </div>
+                  )}
                   <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-light)', padding: '1rem', borderRadius: 8 }}>
                     <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Timeline</span>
                     <strong style={{ fontSize: '1.4rem' }}>
@@ -641,6 +702,10 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
                   {(roadmap.levels || []).map((level) => {
                     const pct = level.targetAmount > 0 ? (level.currentAmount / level.targetAmount) * 100 : 100;
+                    const activeYears = useAlternative ? roadmap.alternativePlan?.timelineYears || roadmap.timelineYears : roadmap.timelineYears;
+                    const monthlyDepositAmt = level.type === 'investing'
+                      ? level.targetAmount
+                      : Math.round(level.targetAmount / (activeYears * 12));
 
                     return (
                       <div
@@ -673,6 +738,9 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
                                 Level {level.levelNumber} · {level.allocation}
                               </span>
                               <h3 style={{ fontSize: '1.05rem', margin: '0.15rem 0 0' }}>{level.title}</h3>
+                              <span style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '0.25rem', fontWeight: 500 }}>
+                                {level.targetAmount === 0 ? 'No deposit required' : `Required: ${s}${monthlyDepositAmt.toLocaleString()}/month`}
+                              </span>
                             </div>
                           </div>
 
@@ -756,9 +824,15 @@ function LevelWorkspace({
   setSubChatText,
   submitSubChat,
   subChatLoading,
-  renderFormattedText
+  renderFormattedText,
+  roadmap,
+  useAlternative
 }) {
   const pct = level.targetAmount > 0 ? (level.currentAmount / level.targetAmount) * 100 : 100;
+  const activeYears = useAlternative ? roadmap?.alternativePlan?.timelineYears || roadmap?.timelineYears : roadmap?.timelineYears;
+  const monthlyDepositAmt = level.type === 'investing'
+    ? level.targetAmount
+    : Math.round(level.targetAmount / (activeYears * 12));
 
   return (
     <section className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minHeight: '600px', background: 'rgba(10, 15, 30, 0.6)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -805,6 +879,9 @@ function LevelWorkspace({
                 </div>
                 <div style={{ width: '100%', height: 6, background: 'rgba(255,255,255,0.05)', borderRadius: 3, overflow: 'hidden' }}>
                   <div style={{ width: `${pct}%`, height: '100%', background: level.isCompleted ? 'var(--success)' : 'var(--primary)', transition: 'width 0.3s' }} />
+                </div>
+                <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-light)', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                  <strong>Monthly Contribution:</strong> {s}{monthlyDepositAmt.toLocaleString()}/month
                 </div>
               </div>
             )}

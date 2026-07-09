@@ -134,22 +134,22 @@ export async function buildRoadmap({
   const levels = [];
   let currentLevel = 1;
 
-  // Level 1: Emergency Guardrail (Target: 3 months of expenses)
-  const emergencyTarget = expensesSum * 3;
-  const isEmergencyDone = savings >= emergencyTarget;
+  // Level 1: Starter Emergency Shield (Target: 1 month of expenses or flat default)
+  const starterTarget = expensesSum > 0 ? expensesSum : (currency === 'INR' ? 30000 : 1000);
+  const isStarterDone = savings >= starterTarget;
   levels.push({
     levelNumber: currentLevel++,
-    title: 'The Emergency Guardrail',
-    action: `Build a emergency buffer of ${currency} ${emergencyTarget.toLocaleString()}`,
-    targetAmount: emergencyTarget,
-    currentAmount: Math.min(savings, emergencyTarget),
-    isCompleted: isEmergencyDone,
+    title: 'The Starter Emergency Shield',
+    action: `Build a starter buffer of ${currency} ${starterTarget.toLocaleString()}`,
+    targetAmount: starterTarget,
+    currentAmount: Math.min(savings, starterTarget),
+    isCompleted: isStarterDone,
     allocation: 'High-Yield Savings Account (HYSA)',
-    type: 'emergency'
+    type: 'starter_emergency'
   });
 
-  // Remaining savings to offset high-interest debt or primary goal
-  let remainingSavings = Math.max(0, savings - emergencyTarget);
+  // Remaining savings to offset high-interest debt or full emergency
+  let remainingSavings = Math.max(0, savings - starterTarget);
 
   // Level 2: The Debt Decelerator
   const highInterestDebt = debt.filter(d => d.rate > 7);
@@ -176,7 +176,23 @@ export async function buildRoadmap({
     type: 'debt'
   });
 
-  // Level 3: The Investment Launchpad
+  // Level 3: The Full Emergency Guardrail
+  const fullTarget = expensesSum * 3;
+  const incrementalTarget = Math.max(0, fullTarget - starterTarget); // Remaining 2 months
+  const isFullDone = isStarterDone && (remainingSavings >= incrementalTarget);
+  levels.push({
+    levelNumber: currentLevel++,
+    title: 'The Full Emergency Guardrail',
+    action: `Build the full emergency buffer of ${currency} ${fullTarget.toLocaleString()}`,
+    targetAmount: incrementalTarget,
+    currentAmount: Math.min(remainingSavings, incrementalTarget),
+    isCompleted: isFullDone,
+    allocation: 'High-Yield Savings Account (HYSA)',
+    type: 'full_emergency'
+  });
+  remainingSavings = Math.max(0, remainingSavings - incrementalTarget);
+
+  // Level 4: The Investment Launchpad
   // This level is educational & sets up dynamic regular investing
   levels.push({
     levelNumber: currentLevel++,
@@ -189,7 +205,7 @@ export async function buildRoadmap({
     type: 'investing'
   });
 
-  // Level 4: The Goal Vault
+  // Level 5: The Goal Vault
   const goalCurrentAmount = remainingSavings;
   const isGoalDone = goalCurrentAmount >= targetSaveAmount;
   levels.push({
@@ -223,13 +239,13 @@ Here is the Level-by-Level Roadmap we designed:
 ${levelsContext}
 
 Task:
-For EACH of the 4 levels, generate the explanations:
+For EACH of the 5 levels, generate the explanations:
 1. "why": Explain the financial psychology or economic logic. (e.g. why emergency funds protect investments, why index funds beat inflation).
 2. "where": Recommend specific financial vehicles (e.g. Vanguard/Fidelity, HYSA providers, or payment strategies like debt avalanche). Do not mention specific brand names unless they are industry standards (like Index ETFs e.g. VTI, VOO).
 3. "how": Exact, tactical step-by-step instructions on what to configure (e.g. "open a secondary sub-account, set auto-transfer on payday"). Use real numbers.
 4. "what": A plain explanation of what the level is, written for a first-time earner.
 
-Return a JSON array of 4 objects corresponding to the levels in order. Confirming to this schema:
+Return a JSON array of 5 objects corresponding to the levels in order. Confirming to this schema:
 [
   {
     "levelNumber": number,
@@ -285,17 +301,23 @@ Do not return any formatting, markdown markers, or explanations, just the JSON a
     
     // Custom fallback explanations per level category
     const fallbacks = {
-      emergency: {
-        why: 'An emergency fund acts as a financial buffer so you do not have to take on high-interest debt when unexpected costs arise.',
-        where: 'Store this in a High-Yield Savings Account (HYSA) separate from your checking account to keep it liquid.',
-        how: 'Set up an automatic recurring transfer of a portion of your paycheck to this HYSA on every payday.',
-        what: 'This step establishes your primary safety net.'
+      starter_emergency: {
+        why: 'A starter emergency fund acts as a small, immediate financial shield to prevent you from taking on new high-interest debt for minor emergencies.',
+        where: 'Store this in a separate High-Yield Savings Account (HYSA) linked to your primary checking account for liquidity.',
+        how: 'Set up an automatic payday transfer of 10-20% of your paycheck into this account until you reach your starter buffer.',
+        what: 'This step establishes your immediate financial shield.'
       },
       debt: {
-        why: 'High-interest debt is a drag on your financial system. Paying it off yields a guaranteed return equal to the interest rate of the loan.',
+        why: 'High-interest debt is a massive drag on your cash flow. Paying it off yields a guaranteed return equal to the interest rate of the loan.',
         where: 'Pay directly to your high-interest credit cards or loan accounts using the Debt Avalanche or Debt Snowball method.',
         how: 'Continue making minimum payments on all debts except the one with the highest interest rate, routing all extra savings capacity to that one.',
         what: 'This step focuses on clearing debt to free up future cash flow.'
+      },
+      full_emergency: {
+        why: 'Now that high-interest debt is cleared, building a full 3-month expense buffer protects your investments and career options from major life disruptions.',
+        where: 'Keep this in your High-Yield Savings Account (HYSA) or low-risk money market funds.',
+        how: 'Redirect the monthly cash flow that was previously paying off debt into your HYSA until the full target is met.',
+        what: 'This step builds your long-term safety shield.'
       },
       investing: {
         why: 'To grow wealth and beat inflation over the long term, you need to invest in assets that appreciate. Compounding returns build security.',
