@@ -5,6 +5,27 @@ import { useState, useEffect } from 'react';
 const CURRENCY_SYMBOLS = { USD: '$', GBP: '£', EUR: '€', CAD: 'CA$', AUD: 'A$', INR: '₹', SGD: 'S$', JPY: '¥', NZD: 'NZ$' };
 const sym = (currency) => CURRENCY_SYMBOLS[currency] || currency + ' ';
 
+const COMMON_HYSA_BANKS = [
+  'Marcus by Goldman Sachs',
+  'Ally Bank',
+  'Wealthfront',
+  'SoFi',
+  'Discover Bank',
+  'American Express',
+  'Apple Savings',
+  'Capital One 360',
+  'Other'
+];
+
+const COMMON_DEBT_CATEGORIES = [
+  'Credit Card',
+  'Student Loan',
+  'Car Loan',
+  'Mortgage',
+  'Personal Loan',
+  'Other'
+];
+
 export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -14,14 +35,18 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
 
   // Baseline details
   const [baselineSubmitted, setBaselineSubmitted] = useState(false);
-  const [savings, setSavings] = useState(0);
-  const [debt, setDebt] = useState([{ type: 'Credit Card', amount: 2500, rate: 18 }]);
+  const [savingsList, setSavingsList] = useState([
+    { type: 'savings', bank: '', amount: 5000, rate: 0.5 }
+  ]);
+  const [debt, setDebt] = useState([{ type: 'Credit Card', customType: '', amount: 2500, rate: 18 }]);
   const [monthlyExpenses, setMonthlyExpenses] = useState([
     { category: 'Rent / Mortgage', amount: 1500 },
     { category: 'Groceries & Dining', amount: 400 },
     { category: 'Utilities', amount: 200 },
     { category: 'Transport', amount: 150 }
   ]);
+
+  const savings = savingsList.reduce((sum, sItem) => sum + Number(sItem.amount || 0), 0);
 
   // Custom expense input
   const [customExpCategory, setCustomExpCategory] = useState('');
@@ -69,7 +94,9 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
       .then(d => {
         if (d.profile) setProfile(d.profile);
         if (d.activeGoal) {
-          setSavings(d.activeGoal.savings || 0);
+          setSavingsList(d.activeGoal.savingsList || [
+            { type: 'savings', bank: '', amount: d.activeGoal.savings || 0, rate: 0.5 }
+          ]);
           setDebt(d.activeGoal.debt || []);
           setMonthlyExpenses(d.activeGoal.monthlyExpenses || []);
           setRoadmap(d.activeGoal.roadmap);
@@ -102,15 +129,53 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
     setMonthlyExpenses(monthlyExpenses.filter((_, i) => i !== index));
   };
 
-  // Add debt item
+  // Savings list helpers
+  const addSavingsItem = () => {
+    setSavingsList([...savingsList, { type: 'savings', bank: '', amount: '', rate: 0.5 }]);
+  };
+
+  const updateSavingsItem = (index, field, value) => {
+    const updated = savingsList.map((item, i) => {
+      if (i !== index) return item;
+      const newItem = { ...item, [field]: field === 'amount' || field === 'rate' ? Number(value) : value };
+      
+      // Auto-set default rates when type changes
+      if (field === 'type') {
+        if (value === 'savings') {
+          newItem.rate = 0.5;
+          newItem.bank = '';
+        } else if (value === 'hysa') {
+          newItem.rate = 4.5;
+          newItem.bank = 'Marcus by Goldman Sachs';
+        } else if (value === 'investment') {
+          newItem.rate = 8.0;
+          newItem.bank = '';
+        }
+      }
+      return newItem;
+    });
+    setSavingsList(updated);
+  };
+
+  const removeSavingsItem = (index) => {
+    setSavingsList(savingsList.filter((_, i) => i !== index));
+  };
+
+  // Add debt item with custom type support
   const addDebtItem = () => {
-    setDebt([...debt, { type: 'Personal Loan', amount: 1000, rate: 10 }]);
+    setDebt([...debt, { type: 'Credit Card', customType: '', amount: '', rate: '' }]);
   };
 
   // Update debt fields
   const updateDebtItem = (index, field, value) => {
-    const updated = [...debt];
-    updated[index][field] = field === 'type' ? value : Number(value);
+    const updated = debt.map((item, i) => {
+      if (i !== index) return item;
+      const newItem = { ...item, [field]: field === 'amount' || field === 'rate' ? Number(value) : value };
+      if (field === 'type' && value !== 'Other') {
+        newItem.customType = '';
+      }
+      return newItem;
+    });
     setDebt(updated);
   };
 
@@ -144,6 +209,7 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
         body: JSON.stringify({
           message: text,
           savings,
+          savingsList,
           debt,
           monthlyExpenses,
           history: chatHistory
@@ -212,6 +278,7 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
           body: JSON.stringify({
             message: compositeInput,
             savings,
+            savingsList,
             debt,
             monthlyExpenses,
             history: newHistory
@@ -245,6 +312,7 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
         body: JSON.stringify({
           confirmGoal: true,
           savings,
+          savingsList,
           debt,
           monthlyExpenses,
           goalData: {
@@ -328,23 +396,96 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
           </p>
 
           <form onSubmit={submitBaseline}>
-            {/* Savings input */}
             <div style={{ marginBottom: '1.5rem' }}>
-              <label className="form-label" style={{ fontWeight: 600, fontSize: '0.95rem' }}>
-                Existing Savings & Cash ({profile?.currency || 'USD'})
-              </label>
-              <input
-                type="number"
-                className="form-input"
-                value={savings}
-                onChange={e => setSavings(Number(e.target.value))}
-                placeholder="e.g. 5000"
-                style={{ maxWidth: 300 }}
-                required
-              />
-              <span style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                How much liquid savings do you currently have across your accounts?
-              </span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <label className="form-label" style={{ fontWeight: 600, fontSize: '0.95rem', margin: 0 }}>
+                  Existing Savings & Investments ({profile?.currency || 'USD'})
+                </label>
+                <button type="button" className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem' }} onClick={addSavingsItem}>
+                  + Add Account
+                </button>
+              </div>
+
+              {savingsList.length === 0 ? (
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>No savings registered. Click Add Account to register a savings source.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {savingsList.map((item, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                      
+                      {/* Type dropdown */}
+                      <select
+                        className="form-input"
+                        value={item.type}
+                        onChange={e => updateSavingsItem(i, 'type', e.target.value)}
+                        style={{ flex: 1.5, minWidth: '130px' }}
+                      >
+                        <option value="savings">Savings Account</option>
+                        <option value="hysa">HYSA</option>
+                        <option value="investment">Other Investments (Stocks/Gold)</option>
+                      </select>
+
+                      {/* HYSA bank dropdown or custom input */}
+                      {item.type === 'hysa' && (
+                        <select
+                          className="form-input"
+                          value={COMMON_HYSA_BANKS.includes(item.bank) ? item.bank : 'Other'}
+                          onChange={e => {
+                            const val = e.target.value;
+                            updateSavingsItem(i, 'bank', val === 'Other' ? '' : val);
+                          }}
+                          style={{ flex: 1.5, minWidth: '150px' }}
+                        >
+                          {COMMON_HYSA_BANKS.map((bName) => (
+                            <option key={bName} value={bName}>{bName}</option>
+                          ))}
+                        </select>
+                      )}
+
+                      {/* Custom bank name input for HYSA if "Other" is active */}
+                      {item.type === 'hysa' && !COMMON_HYSA_BANKS.filter(b => b !== 'Other').includes(item.bank) && (
+                        <input
+                          className="form-input"
+                          placeholder="Custom Bank Name"
+                          value={item.bank || ''}
+                          onChange={e => updateSavingsItem(i, 'bank', e.target.value)}
+                          style={{ flex: 1.2, minWidth: '110px' }}
+                          required
+                        />
+                      )}
+
+                      {/* Amount input */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flex: 1.2, minWidth: '100px' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>{s}</span>
+                        <input
+                          type="number"
+                          className="form-input"
+                          placeholder="Amount"
+                          value={item.amount}
+                          onChange={e => updateSavingsItem(i, 'amount', e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      {/* Interest Rate input */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flex: 1.0, minWidth: '80px' }}>
+                        <input
+                          type="number"
+                          step="0.1"
+                          className="form-input"
+                          placeholder="Rate %"
+                          value={item.rate}
+                          onChange={e => updateSavingsItem(i, 'rate', e.target.value)}
+                          required
+                        />
+                        <span style={{ color: 'var(--text-muted)' }}>%</span>
+                      </div>
+
+                      <button type="button" className="btn btn-text" style={{ color: 'var(--error)' }} onClick={() => removeSavingsItem(i)}>✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Debt inputs */}
@@ -363,15 +504,36 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {debt.map((item, i) => (
-                    <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                      <input
+                    <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                      
+                      {/* Type Selection */}
+                      <select
                         className="form-input"
-                        placeholder="Debt Type (e.g. Credit Card)"
-                        value={item.type}
-                        onChange={e => updateDebtItem(i, 'type', e.target.value)}
-                        style={{ flex: 2 }}
-                      />
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flex: 1.5 }}>
+                        value={COMMON_DEBT_CATEGORIES.includes(item.type) ? item.type : 'Other'}
+                        onChange={e => {
+                          const val = e.target.value;
+                          updateDebtItem(i, 'type', val === 'Other' ? '' : val);
+                        }}
+                        style={{ flex: 1.5, minWidth: '130px' }}
+                      >
+                        {COMMON_DEBT_CATEGORIES.map((cName) => (
+                          <option key={cName} value={cName}>{cName}</option>
+                        ))}
+                      </select>
+
+                      {/* Custom input if Other is active */}
+                      {!COMMON_DEBT_CATEGORIES.filter(c => c !== 'Other').includes(item.type) && (
+                        <input
+                          className="form-input"
+                          placeholder="Custom Debt Name"
+                          value={item.type || ''}
+                          onChange={e => updateDebtItem(i, 'type', e.target.value)}
+                          style={{ flex: 1.5, minWidth: '130px' }}
+                          required
+                        />
+                      )}
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flex: 1.2, minWidth: '100px' }}>
                         <span style={{ color: 'var(--text-muted)' }}>{s}</span>
                         <input
                           type="number"
@@ -379,15 +541,17 @@ export default function Step3Panel({ onBack, onProceed, setStep3Done }) {
                           placeholder="Amount"
                           value={item.amount}
                           onChange={e => updateDebtItem(i, 'amount', e.target.value)}
+                          required
                         />
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flex: 1.2 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flex: 1.0, minWidth: '80px' }}>
                         <input
                           type="number"
                           className="form-input"
                           placeholder="Rate %"
                           value={item.rate}
                           onChange={e => updateDebtItem(i, 'rate', e.target.value)}
+                          required
                         />
                         <span style={{ color: 'var(--text-muted)' }}>%</span>
                       </div>

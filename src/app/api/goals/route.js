@@ -103,6 +103,7 @@ export async function POST(request) {
     const {
       message,
       savings = 0,
+      savingsList = [],
       debt = [],
       monthlyExpenses = [],
       history = [],
@@ -132,6 +133,7 @@ export async function POST(request) {
         {
           $set: {
             savings: Number(savings),
+            savingsList,
             debt,
             monthlyExpenses,
             updatedAt: new Date()
@@ -144,6 +146,7 @@ export async function POST(request) {
         userId,
         ...goalData,
         savings: Number(savings),
+        savingsList,
         debt,
         monthlyExpenses,
         updatedAt: new Date()
