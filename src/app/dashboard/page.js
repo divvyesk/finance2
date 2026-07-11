@@ -632,7 +632,7 @@ function ResultPanel({ result, onReset, onProceed }) {
           )}
 
           {/* Human summary of key fields */}
-          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)', borderRadius: 8, padding: '1rem', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid var(--border-light)', borderRadius: 8, padding: '1rem', fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Quick Summary</p>
             {data.salary       && <Row label="Base Salary"     value={`${s}${data.salary.toLocaleString()} / year (${data.currency})`} />}
             {data.signing_bonus && <Row label="Signing Bonus"  value={`${s}${data.signing_bonus.toLocaleString()}`} />}
@@ -651,7 +651,7 @@ function ResultPanel({ result, onReset, onProceed }) {
           {rawTextPreview && (
             <details style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               <summary style={{ cursor: 'pointer', marginBottom: '0.5rem' }}>View raw OCR text preview</summary>
-              <pre style={{ background: '#04060b', border: '1px solid var(--border-light)', borderRadius: 8, padding: '0.75rem', color: '#94a3b8', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.5 }}>
+              <pre style={{ background: '#f0f0f0', border: '1px solid var(--border-light)', borderRadius: 8, padding: '0.75rem', color: '#64748b', whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.5 }}>
                 {rawTextPreview}…
               </pre>
             </details>
@@ -809,7 +809,7 @@ function Step2Panel({ onBack, onProceed, setStep2Done }) {
         </p>
 
         {taxLoading && (
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(7,9,14,0.4)', backdropFilter: 'blur(2px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10, borderRadius: 12 }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(2px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10, borderRadius: 12 }}>
             <div className="loading-spinner" style={{ width: 30, height: 30 }} />
           </div>
         )}
@@ -820,7 +820,7 @@ function Step2Panel({ onBack, onProceed, setStep2Done }) {
             <div>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.75rem' }}>Visual Paycheck Breakdown</p>
               
-              <div style={{ display: 'flex', height: 24, borderRadius: 6, overflow: 'hidden', background: '#1e293b', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', height: 24, borderRadius: 6, overflow: 'hidden', background: 'rgba(0,0,0,0.1)', marginBottom: '1.5rem' }}>
                 <div style={{ width: `${(netPay / gross) * 100}%`, background: 'var(--success)', transition: 'width 0.3s ease' }} title={`Net Take-home: ${(netPay/gross*100).toFixed(1)}%`} />
                 {deductionList.map(d => {
                   const pct = (d.value / gross) * 100;
@@ -854,7 +854,7 @@ function Step2Panel({ onBack, onProceed, setStep2Done }) {
               </div>
             </div>
 
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-light)', borderRadius: 8, padding: '1rem' }}>
+            <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px solid var(--border-light)', borderRadius: 8, padding: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                 <strong style={{ fontSize: '0.9rem' }}>Pre-tax Contribution Rate</strong>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
@@ -919,13 +919,13 @@ function Step2Panel({ onBack, onProceed, setStep2Done }) {
                     <div key={idx} style={{ border: '1px solid var(--border-light)', borderRadius: 8, overflow: 'hidden' }}>
                       <button
                         onClick={() => setExpandedFaq(isOpen ? null : idx)}
-                        style={{ width: '100%', background: 'rgba(255,255,255,0.01)', border: 'none', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', textAlign: 'left', outline: 'none' }}
+                        style={{ width: '100%', background: 'rgba(0,0,0,0.02)', border: 'none', padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', textAlign: 'left', outline: 'none' }}
                       >
                         <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-primary)' }}>{faq.question}</span>
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▶</span>
                       </button>
                       {isOpen && (
-                        <div style={{ padding: '0.75rem 1rem', background: '#090d16', borderTop: '1px solid var(--border-light)', fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--text-secondary)' }}>
+                        <div style={{ padding: '0.75rem 1rem', background: '#f8f8f8', borderTop: '1px solid var(--border-light)', fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--text-secondary)' }}>
                           {faq.answer}
                         </div>
                       )}

@@ -1,6 +1,9 @@
 import { cookies } from 'next/headers';
 import { getData } from './lib/db';
+import { Inter } from 'next/font/google';
 import './globals.css';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'FinOS - AI Financial Onboarding Operating System',
@@ -26,8 +29,7 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang="en">
-      <body>
-        <div className="radial-bg"></div>
+      <body className={inter.className}>
         <header className="header">
           <div className="container nav">
             <a href="/" className="logo">
