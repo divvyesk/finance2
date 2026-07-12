@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -29,7 +30,6 @@ export default function Login() {
         throw new Error(data.error || 'Invalid credentials');
       }
 
-      // Force refresh/redirect to update parent Layout headers
       window.location.href = '/dashboard';
     } catch (err) {
       setError(err.message);
@@ -39,57 +39,108 @@ export default function Login() {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: '4rem 1rem',
-      minHeight: 'calc(100vh - 70px)'
-    }}>
-      <div className="card" style={{ width: '100%', maxWidth: '450px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Welcome Back</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            Log in to resume your financial onboarding operating system
-          </p>
-        </div>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', position: 'relative' }}>
 
-        {error && (
+      {/* Back Button */}
+      <Link href="/" style={{
+        position: 'absolute', top: '2rem', left: '2rem', color: 'var(--text-secondary)', textDecoration: 'none',
+        fontSize: '0.9rem', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '0.5rem', zIndex: 10
+      }}>
+        <span>&larr;</span> Back to Home
+      </Link>
+
+      {/* Left Panel */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        padding: '4rem 6rem',
+        position: 'relative',
+        borderRight: '1px solid var(--border-light)'
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: '550px', width: '100%' }}>
+
           <div style={{
-            background: 'var(--error-glow)',
-            color: 'var(--error)',
-            border: '1px solid rgba(239, 68, 68, 0.2)',
-            padding: '0.75rem 1rem',
-            borderRadius: '8px',
-            fontSize: '0.9rem',
-            marginBottom: '1.5rem'
+            background: 'var(--bg-secondary)',
+            padding: '2rem',
+            borderRadius: '24px',
+            borderBottomLeftRadius: '4px',
+            border: '1px solid var(--border-light)',
+            boxShadow: 'var(--card-shadow)',
+            position: 'relative',
+            marginBottom: '1.5rem',
+            width: '85%',
+            alignSelf: 'flex-end',
+            transform: 'translate(140px, 60px)',
+            zIndex: 2
           }}>
-            {error}
+            <h1 style={{ color: 'var(--text-primary)', fontSize: '2.5rem', marginBottom: '1rem', fontWeight: '800', lineHeight: 1.1, letterSpacing: '-0.04em' }}>Welcome Back</h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', lineHeight: '1.6' }}>
+              Pick up where you left off. Track your runway, decode your paycheck, and simulate your financial future with FinOS.
+            </p>
+            {/* Speech bubble tail */}
+            <div style={{
+              position: 'absolute',
+              bottom: '-10px',
+              left: '20px',
+              width: '20px',
+              height: '20px',
+              background: 'var(--bg-secondary)',
+              borderRight: '1px solid var(--border-light)',
+              borderBottom: '1px solid var(--border-light)',
+              transform: 'rotate(45deg)',
+            }}></div>
           </div>
-        )}
 
-        <form onSubmit={handleLogin}>
-          <div className="form-group">
-            <label className="form-label" htmlFor="email">Email Address</label>
-            <input
-              id="email"
-              type="email"
-              className="form-input"
-              placeholder="alex@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+          <img src="/mascot.png" alt="Mascot" style={{ width: '480px', height: 'auto', zIndex: 1 }} />
 
-          <div className="form-group">
-            <label className="form-label" htmlFor="password">Password</label>
-            <div style={{ position: 'relative' }}>
+        </div>
+      </div>
+
+      {/* Right Panel */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '4rem'
+      }}>
+        <div style={{ width: '100%', maxWidth: '380px' }}>
+
+          <h2 style={{ fontSize: '2rem', marginBottom: '3rem', fontWeight: '700', letterSpacing: '-0.02em' }}>Sign in</h2>
+
+          {error && (
+            <div style={{
+              background: 'var(--error-glow)', color: 'var(--error)', padding: '0.75rem 1rem',
+              borderRadius: '8px', fontSize: '0.9rem', marginBottom: '1.5rem', border: '1px solid rgba(239, 68, 68, 0.2)'
+            }}>
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin}>
+            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+              <label htmlFor="email" className="form-label">Your Email</label>
+              <input
+                id="email"
+                type="email"
+                className="form-input"
+                placeholder="email@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: '2.5rem', position: 'relative' }}>
+              <label htmlFor="password" className="form-label">Password</label>
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 className="form-input"
-                style={{ paddingRight: '3.5rem' }}
+                style={{ paddingRight: '2.5rem' }}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -99,40 +150,32 @@ export default function Login() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 style={{
-                  position: 'absolute',
-                  right: '10px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  fontSize: '0.85rem',
-                  fontWeight: '600',
-                  padding: '0.25rem 0.5rem',
-                  userSelect: 'none'
+                  position: 'absolute', right: '10px', top: '50%', background: 'none', border: 'none',
+                  color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '1rem',
+                  display: 'flex', alignItems: 'center', padding: '0.25rem'
                 }}
               >
-                {showPassword ? 'Hide' : 'Show'}
+                👁
               </button>
             </div>
+
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={loading}
+              style={{ width: '100%', padding: '0.85rem' }}
+            >
+              {loading ? <span className="loading-spinner" style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#fff' }}></span> : 'Sign in'}
+            </button>
+          </form>
+
+          <div style={{ marginTop: '2rem', fontSize: '0.9rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+            New to FinOS?{' '}
+            <Link href="/signup" style={{ color: 'var(--primary)', fontWeight: '600', textDecoration: 'none' }}>
+              Create Account
+            </Link>
           </div>
 
-          <button
-            type="submit"
-            className="btn btn-primary"
-            style={{ width: '100%', marginTop: '1rem' }}
-            disabled={loading}
-          >
-            {loading ? <span className="loading-spinner"></span> : 'Log In'}
-          </button>
-        </form>
-
-        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          Don't have an account?{' '}
-          <a href="/signup" style={{ color: 'var(--primary)', fontWeight: '600' }}>
-            Sign Up
-          </a>
         </div>
       </div>
     </div>

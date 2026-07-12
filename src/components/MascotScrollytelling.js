@@ -83,8 +83,8 @@ export default function MascotScrollytelling({ user }) {
     const drawFrame = (progress) => {
       if (!ctx || !imagesRef.current.length) return;
       
-      // Map progress (0 to 0.85) to frame index (1 to TOTAL_FRAMES)
-      const frameProgress = Math.min(1, Math.max(0, progress / 0.85));
+      // Map progress (0 to 0.70) to frame index (1 to TOTAL_FRAMES)
+      const frameProgress = Math.min(1, Math.max(0, progress / 0.70));
       const frameIndex = Math.min(
         TOTAL_FRAMES,
         Math.max(1, Math.ceil(frameProgress * TOTAL_FRAMES))
@@ -110,18 +110,18 @@ export default function MascotScrollytelling({ user }) {
       // Clear canvas
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-      // Implement 'contain' object-fit logic
+      // Implement 'cover' object-fit logic to fill screen completely
       const imgRatio = img.width / img.height;
       const canvasRatio = canvasWidth / canvasHeight;
       
       let renderWidth, renderHeight;
       
       if (canvasRatio < imgRatio) {
-        renderWidth = canvasWidth;
-        renderHeight = canvasWidth / imgRatio;
-      } else {
         renderHeight = canvasHeight;
         renderWidth = canvasHeight * imgRatio;
+      } else {
+        renderWidth = canvasWidth;
+        renderHeight = canvasWidth / imgRatio;
       }
       
       const offsetX = (canvasWidth - renderWidth) / 2;
@@ -146,34 +146,34 @@ export default function MascotScrollytelling({ user }) {
   }, [isLoaded, smoothProgress]);
 
   // -- Text Overlay Animations --
-  // Scaled by 0.85 to align with the new 0-0.85 frame sequence
+  // Scaled by 0.70 to align with the new 0-0.70 frame sequence
   
-  // Beat A: (0 to 0.17)
-  const opacityA = useTransform(smoothProgress, [0, 0.017, 0.153, 0.17], [0, 1, 1, 0]);
-  const translateYA = useTransform(smoothProgress, [0, 0.017, 0.153, 0.17], [40, 0, 0, -40]);
-  const scaleA = useTransform(smoothProgress, [0, 0.017, 0.153, 0.17], [1.05, 1, 1, 0.95]);
-  const filterA = useTransform(smoothProgress, [0, 0.017, 0.153, 0.17], ["blur(12px)", "blur(0px)", "blur(0px)", "blur(12px)"]);
+  // Beat A: (0 to 0.14)
+  const opacityA = useTransform(smoothProgress, [0, 0.014, 0.126, 0.14], [0, 1, 1, 0]);
+  const translateYA = useTransform(smoothProgress, [0, 0.014, 0.126, 0.14], [40, 0, 0, -40]);
+  const scaleA = useTransform(smoothProgress, [0, 0.014, 0.126, 0.14], [1.05, 1, 1, 0.95]);
+  const filterA = useTransform(smoothProgress, [0, 0.014, 0.126, 0.14], ["blur(12px)", "blur(0px)", "blur(0px)", "blur(12px)"]);
 
-  // Beat B: (0.21 to 0.38)
-  const opacityB = useTransform(smoothProgress, [0.21, 0.23, 0.36, 0.38], [0, 1, 1, 0]);
-  const translateYB = useTransform(smoothProgress, [0.21, 0.23, 0.36, 0.38], [40, 0, 0, -40]);
-  const scaleB = useTransform(smoothProgress, [0.21, 0.23, 0.36, 0.38], [1.05, 1, 1, 0.95]);
-  const filterB = useTransform(smoothProgress, [0.21, 0.23, 0.36, 0.38], ["blur(12px)", "blur(0px)", "blur(0px)", "blur(12px)"]);
+  // Beat B: (0.175 to 0.315)
+  const opacityB = useTransform(smoothProgress, [0.175, 0.189, 0.301, 0.315], [0, 1, 1, 0]);
+  const translateYB = useTransform(smoothProgress, [0.175, 0.189, 0.301, 0.315], [40, 0, 0, -40]);
+  const scaleB = useTransform(smoothProgress, [0.175, 0.189, 0.301, 0.315], [1.05, 1, 1, 0.95]);
+  const filterB = useTransform(smoothProgress, [0.175, 0.189, 0.301, 0.315], ["blur(12px)", "blur(0px)", "blur(0px)", "blur(12px)"]);
 
-  // Beat C: (0.708 to 0.81)
-  const opacityC = useTransform(smoothProgress, [0.708, 0.72, 0.79, 0.81], [0, 1, 1, 0]);
-  const translateYC = useTransform(smoothProgress, [0.708, 0.72, 0.79, 0.81], [40, 0, 0, -40]);
-  const scaleC = useTransform(smoothProgress, [0.708, 0.72, 0.79, 0.81], [1.05, 1, 1, 0.95]);
-  const filterC = useTransform(smoothProgress, [0.708, 0.72, 0.79, 0.81], ["blur(12px)", "blur(0px)", "blur(0px)", "blur(12px)"]);
+  // Beat C: (0.583 to 0.665)
+  const opacityC = useTransform(smoothProgress, [0.583, 0.595, 0.651, 0.665], [0, 1, 1, 0]);
+  const translateYC = useTransform(smoothProgress, [0.583, 0.595, 0.651, 0.665], [40, 0, 0, -40]);
+  const scaleC = useTransform(smoothProgress, [0.583, 0.595, 0.651, 0.665], [1.05, 1, 1, 0.95]);
+  const filterC = useTransform(smoothProgress, [0.583, 0.595, 0.651, 0.665], ["blur(12px)", "blur(0px)", "blur(0px)", "blur(12px)"]);
 
-  // Canvas background blur after frames stop
-  const canvasFilter = useTransform(smoothProgress, [0.85, 0.92], ["blur(0px)", "blur(15px)"]);
+  // Canvas background blur (delayed to hold frame 270 perfectly still)
+  const canvasFilter = useTransform(smoothProgress, [0.80, 0.90], ["blur(0px)", "blur(15px)"]);
 
-  // Beat D: (0.88 to 1.0) - Appears while background blurs
-  const opacityD = useTransform(smoothProgress, [0.88, 0.95], [0, 1]);
-  const translateYD = useTransform(smoothProgress, [0.88, 0.95], [40, 0]);
-  const scaleD = useTransform(smoothProgress, [0.88, 0.95], [1.05, 1]);
-  const filterD = useTransform(smoothProgress, [0.88, 0.95], ["blur(12px)", "blur(0px)"]);
+  // Beat D: Appears as background blurs
+  const opacityD = useTransform(smoothProgress, [0.85, 0.95], [0, 1]);
+  const translateYD = useTransform(smoothProgress, [0.85, 0.95], [40, 0]);
+  const scaleD = useTransform(smoothProgress, [0.85, 0.95], [1.05, 1]);
+  const filterD = useTransform(smoothProgress, [0.85, 0.95], ["blur(12px)", "blur(0px)"]);
   
   // Indicator opacity
   const opacityIndicator = useTransform(smoothProgress, [0, 0.05], [1, 0]);
@@ -182,7 +182,7 @@ export default function MascotScrollytelling({ user }) {
     <div 
       ref={containerRef} 
       style={{ 
-        height: '500vh', 
+        height: '600vh', 
         position: 'relative',
         backgroundColor: '#e5e5e5' // Match seamless background
       }}
@@ -266,6 +266,21 @@ export default function MascotScrollytelling({ user }) {
             opacity: isLoaded ? 1 : 0,
             filter: canvasFilter,
             transition: 'opacity 0.5s ease'
+          }}
+        />
+
+        {/* White Wash Overlay for Beat D Readability */}
+        <motion.div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(255, 255, 255, 0.75)',
+            opacity: opacityD,
+            pointerEvents: 'none',
+            zIndex: 5
           }}
         />
 

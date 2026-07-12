@@ -34,6 +34,13 @@
       "email": "yaahvi@gmail.com",
       "password": "abcdefghi",
       "createdAt": "2026-07-10T03:07:05.767Z"
+    },
+    {
+      "id": "1783782186227",
+      "name": "divvye",
+      "email": "kansaradivvye@gmail.com",
+      "password": "abcdefghi",
+      "createdAt": "2026-07-11T15:03:06.227Z"
     }
   ],
   "uploads": [

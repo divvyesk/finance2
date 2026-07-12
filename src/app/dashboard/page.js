@@ -73,7 +73,7 @@ export default function Dashboard() {
   // Restore user progress on mount
   useEffect(() => {
     fetch('/api/goals')
-      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(e)).catch(() => Promise.reject(new Error(`HTTP ${r.status}`))))
       .then(d => {
         if (d.hasProfile) {
           setPipelineStage('done');
@@ -212,6 +212,22 @@ export default function Dashboard() {
 
         {/* Sidebar */}
         <aside>
+          <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <div style={{ fontWeight: 600 }}>{user?.name || 'User'}</div>
+              <button 
+                className="btn btn-secondary" 
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+                onClick={() => {
+                  fetch('/api/auth/logout', { method: 'POST' }).finally(() => router.push('/'));
+                }}
+              >
+                Sign Out
+              </button>
+            </div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{user?.email}</div>
+          </div>
+
           <div className="card" style={{ padding: '1.5rem' }}>
             <h3 style={{ fontSize: '1rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>
               Journey Progress
