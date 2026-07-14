@@ -60,7 +60,7 @@ export async function POST(request) {
           console.warn('[upload] PDF parsing failed:', pdfErr.message);
           return NextResponse.json(
             {
-              error: `PDF parsing failed (e.g. bad XRef entry / corrupted structure). If this is a scanned document, please try converting it to a PNG or JPG image and upload it again.`
+              error: pdfErr.message || 'PDF parsing failed. If this is a scanned document, please try converting it to a PNG or JPG image and upload it again.'
             },
             { status: 400 }
           );
