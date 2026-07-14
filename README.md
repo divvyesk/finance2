@@ -8,6 +8,11 @@ FinOS is an AI-powered personal finance simulator and roadmap planner. It takes 
 
 <img width="1263" height="703" alt="Screenshot 2026-07-14 at 8 20 12 AM" src="https://github.com/user-attachments/assets/58cf6aa4-b8cb-4658-8446-ea42489d9243" />
 
+---
+
+[Find a sample offer letter here](https://github.com/divvyesk/finos/blob/main/ref/sample_new_grad_offer_letter.pdf)
+
+---
 
 ## What It Does
 
