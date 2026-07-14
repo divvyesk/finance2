@@ -46,6 +46,9 @@ You define your financial goals (like building an emergency fund, buying a car, 
 
 ---
 
+[Read the detailed technical report of the project here](https://github.com/divvyesk/finos/blob/main/TECHNICAL_REPORT.md)
+
+
 ## Folder Structure
 
 ```
