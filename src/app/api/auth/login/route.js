@@ -13,7 +13,8 @@ export async function POST(request) {
       );
     }
 
-    const user = findUserByEmail(email);
+    const trimmedEmail = email.trim();
+    const user = await findUserByEmail(trimmedEmail);
     if (!user || user.password !== password) {
       return NextResponse.json(
         { error: 'Invalid email or password' },

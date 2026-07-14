@@ -15,7 +15,7 @@ async function getAuthContext() {
   }
 
   // Get local user from db.json first to bridge data
-  const localDb = getData();
+  const localDb = await getData();
   const localUser = localDb.users.find(u => u.id === sessionId);
 
   if (!localUser) {

@@ -130,8 +130,8 @@ export async function POST(request) {
       validation,
     };
 
-    // Persist to db.json
-    const db = getData();
+    // Persist to MongoDB
+    const db = await getData();
     db.uploads.push({
       userId,
       timestamp: new Date().toISOString(),
@@ -141,7 +141,7 @@ export async function POST(request) {
       data: structuredData,
       validation,
     });
-    saveData(db);
+    await saveData(db);
 
     return NextResponse.json(payload);
   } catch (err) {

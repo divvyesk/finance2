@@ -8,20 +8,37 @@ export async function GET() {
     const sessionId = cookieStore.get('session')?.value;
 
     if (!sessionId) {
-      return NextResponse.json({ authenticated: false }, { status: 401 });
+      return NextResponse.json(
+        { authenticated: false },
+        { 
+          status: 401,
+          headers: { 'Cache-Control': 'no-store' }
+        }
+      );
     }
 
-    const data = getData();
+    const data = await getData();
     const user = data.users.find(u => u.id === sessionId);
 
     if (!user) {
-      return NextResponse.json({ authenticated: false }, { status: 401 });
+      return NextResponse.json(
+        { authenticated: false },
+        { 
+          status: 401,
+          headers: { 'Cache-Control': 'no-store' }
+        }
+      );
     }
 
-    return NextResponse.json({
-      authenticated: true,
-      user: { id: user.id, name: user.name, email: user.email }
-    });
+    return NextResponse.json(
+      {
+        authenticated: true,
+        user: { id: user.id, name: user.name, email: user.email }
+      },
+      {
+        headers: { 'Cache-Control': 'no-store' }
+      }
+    );
   } catch (error) {
     console.error('Session check error:', error);
     return NextResponse.json({ authenticated: false }, { status: 500 });

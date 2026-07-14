@@ -20,7 +20,8 @@ export async function POST(request) {
       );
     }
 
-    const existingUser = findUserByEmail(email);
+    const trimmedEmail = email.trim();
+    const existingUser = await findUserByEmail(trimmedEmail);
     if (existingUser) {
       return NextResponse.json(
         { error: 'A user with this email already exists' },
@@ -28,7 +29,7 @@ export async function POST(request) {
       );
     }
 
-    const user = createUser({ name, email, password });
+    const user = await createUser({ name, email: trimmedEmail, password });
     
     // Set session cookie
     const cookieStore = await cookies();

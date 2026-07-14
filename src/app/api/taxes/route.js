@@ -13,7 +13,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const db = getData();
+    const db = await getData();
     const user = db.users.find(u => u.id === sessionId);
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

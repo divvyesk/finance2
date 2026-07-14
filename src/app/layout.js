@@ -17,7 +17,7 @@ export default async function RootLayout({ children }) {
   let user = null;
   if (sessionId) {
     try {
-      const data = getData();
+      const data = await getData();
       const found = data.users.find(u => u.id === sessionId);
       if (found) {
         user = { id: found.id, name: found.name, email: found.email };
