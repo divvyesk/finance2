@@ -1,28 +1,40 @@
-import pdf from 'pdf-parse/lib/pdf-parse.js';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+import path from 'path';
+
+// Setup PDFjs worker path
+const workerPath = path.join(process.cwd(), 'node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs');
+pdfjsLib.GlobalWorkerOptions.workerSrc = workerPath;
 
 /**
  * Stage 1A — PDF Extractor
  *
  * Takes a Node.js Buffer of a PDF file and returns the raw text content.
- *
- * Uses pdf-parse's internal module (not index.js) to avoid the top-level
- * self-test debug code that fires in Next.js/Turbopack builds.
- *
- * Options used:
- *   - max: 0        — Do not render any pages to images. Text-only mode.
- *                     This removes the pdfjs rendering pipeline entirely,
- *                     which is what causes "bad XRef entry" on malformed PDFs.
- *   - version: 'v1.10.100' — Pin to a stable pdfjs worker version.
+ * Uses a modern, locally installed version of pdfjs-dist.
  */
-const PDF_OPTIONS = {
-  max: 0, // disable page rendering — text extraction only
-};
-
 export async function extractTextFromPDF(buffer) {
-  // First pass: try with lenient options
   try {
-    const result = await pdf(buffer, PDF_OPTIONS);
-    const text = result.text?.trim() || '';
+    const data = new Uint8Array(buffer);
+    const loadingTask = pdfjsLib.getDocument({
+      data,
+      stopAtErrors: false
+    });
+
+    const pdfDocument = await loadingTask.promise;
+    let fullText = '';
+    
+    for (let i = 1; i <= pdfDocument.numPages; i++) {
+      const page = await pdfDocument.getPage(i);
+      const textContent = await page.getTextContent();
+      
+      // Extract text content items
+      const pageText = textContent.items
+        .map(item => item.str)
+        .join(' ');
+      
+      fullText += pageText + '\n';
+    }
+
+    const text = fullText.trim();
 
     if (!text || text.length === 0) {
       throw new Error(
@@ -34,36 +46,14 @@ export async function extractTextFromPDF(buffer) {
     return {
       text,
       confidence: 0.98,
-      pageCount: result.numpages,
-      method: 'pdf-parse'
+      pageCount: pdfDocument.numPages,
+      method: 'pdfjs-dist'
     };
-  } catch (firstErr) {
-    // Second pass: try with no options at all (bare call)
-    // Some PDFs fail with options but work with defaults
-    console.warn(`[pdfExtractor] First parse attempt failed, retrying with defaults: ${firstErr.message}`);
-    try {
-      const result = await pdf(buffer);
-      const text = result.text?.trim() || '';
-
-      if (!text || text.length === 0) {
-        throw new Error(
-          'PDF parsed successfully but contained no extractable text. ' +
-          'This is likely a scanned PDF — re-upload as a PNG or JPG image instead.'
-        );
-      }
-
-      return {
-        text,
-        confidence: 0.97,
-        pageCount: result.numpages,
-        method: 'pdf-parse (fallback)'
-      };
-    } catch (secondErr) {
-      console.error('[pdfExtractor] Both parse attempts failed:', secondErr.message);
-      throw new Error(
-        `Could not extract text from this PDF. Reason: ${secondErr.message}. ` +
-        `If this is a scanned document, try uploading it as a PNG or JPG image instead.`
-      );
-    }
+  } catch (error) {
+    console.error('[pdfExtractor] Failed to parse PDF using pdfjs-dist:', error.message);
+    throw new Error(
+      `Could not extract text from this PDF. Reason: ${error.message}. ` +
+      `If this is a scanned document, try uploading it as a PNG or JPG image instead.`
+    );
   }
 }
